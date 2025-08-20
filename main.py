@@ -5,15 +5,31 @@ import datetime
 import pyttsx3
 import sys
 import random
+import subprocess
+
+def chat(query):
+    try:
+        result = subprocess.run(
+            ["ollama", "run", "llama3.2"],
+            input=query,
+            text=True,
+            capture_output=True
+        )
+
+        response = result.stdout.strip()
+
+        print("AI:\n", response)
+        return response if response else "Sorry, no response."
+
+    except Exception as e:
+        print("Error running Ollama:", e)
+        return "Sorry, I couldn't process that."
+
 
 def say(text):
     engine = pyttsx3.init()
     engine.say(text)
     engine.runAndWait()
-
-def chat(query):
-    #todo:fill here
-    pass
 
 def takeCommand():
     r = sr.Recognizer()
@@ -54,8 +70,14 @@ if __name__ == "__main__":
             #os.system(f"")
             #paste your link
             pass
-        elif 'quit' in query:
+        elif "quit" in query:
             say("Goodbye!")
             sys.exit()
-        else:
-            pass
+        elif 'use artificial intelligence' in query.lower():
+            user_request = query.lower().replace("use artificial intelligence", "").strip()
+            if not user_request:
+                say("Sure, what would you like to ask?")
+                user_request = takeCommand()
+            response = chat(user_request)  # full response, no line limit
+            say(response)
+
